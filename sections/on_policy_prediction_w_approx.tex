@@ -1,0 +1,183 @@
+\newcommand{\splittedtext}[2]{\begin{matrix}\mbox{\footnotesize#1}\\\mbox{\footnotesize#2}\end{matrix}}
+
+\section{On-Policy Prediction with Approximation}
+\subsection{Introduction}
+If we want to apply a Reinforcement Learning method to a large state space problem by using tabular methods it becomes infeasible.
+For example if the state is represented by an image, the state space would be larger than the number of atoms in the universe.
+
+That causes two main problems:
+
+\begin{enumerate}
+    \item \textbf{Memory} we would have to store in memory a table of the size of the state space times the number of actions.
+    \item \textbf{Generalization} by having a huge space almost all states encountered have never been seen before so we would never converge our estimates.
+\end{enumerate}
+
+A possible solution to this problem is to combine RL with function approximation (i.e supervised learning).
+This approach solves the previously described issues and transforms the problem from finding the optimal policy to finding a good approximate solution. 
+Approximations are based on parameterized functions ($\hat{v}(s,w)\approx v_\pi(s)$) and typically the number of weights is much smaller than the number of states.
+By changing one weight we change the estimated value of many states, this makes reinforcement learning more powerful but
+also more difficult to manage and understand.
+
+\subsection{Value-function approximation}
+All prediction methods seen so far are based on updates of an
+estimated value function.
+\begin{itemize}
+    \item \textbf{MC update}: $\underbrace{S_t}_{\splittedtext{State}{Updated}}\mapsto \underbrace{G_t}_{\splittedtext{Update}{Target}}$
+    \item \textbf{TD update}:$\underbrace{S_t}_{\splittedtext{State}{Updated}}\mapsto \underbrace{R_{t+1}+\gamma\hat{v}(S_{t+1}, w_t)}_{\splittedtext{Update}{Target}}$
+    \item \textbf{DP update}:$\underbrace{S_t}_{\splittedtext{State}{Updated}}\mapsto \underbrace{\EX{[R_{t+1}+\gamma\hat{v}(S_{t+1}, w_t)\;|\;S_t=s]}}_{\splittedtext{Update}{Target}}$
+\end{itemize}
+
+We can use the current target as the y to predict.
+
+% TODO insert image here
+
+Not all function approximation are equally well suited.\\
+
+For a function to be good it needs to:
+\begin{itemize}
+    \item learn from incrementally obtained data
+    \item deal with non-stationary reward functions
+\end{itemize}
+\subsection{The Prediction Objective}
+In tabular case a continuous measure of prediction quality was not necessary because the learned value function could become equal to the true one and updates affect only single states.
+With function approximation these two assumptions are not guaranteed.\\
+
+We define which states we care most about defining a state distribution $\mu(s)\ge0,\sum_s\mu(s)=1$.
+
+Then a natural objective function is the \textbf{Mean Squared Value Error}
+\begin{align}
+    \overline{\mbox{VE}}(w)\doteq\sum_{s\in\mathcal{S}}\mu(s)[v_\pi(s)-\hat{v}(s, w)]^2
+\end{align}
+
+Often $\mu(s)$ is set to the fraction of time spent in state s (\textbf{on-policy
+distribution}).
+In episodic tasks: let $h(s)$ the probability an episode starts in state $s$,
+then the number of time steps spent, on average, in state $s$ in a
+single episode is:
+
+\begin{align}
+    \eta(s)=h(s)+\sum_{\bar{s}}\eta(\bar{s})\sum_a\pi(a | \bar{s})p(s | \bar{s},a),\quad\forall s\in S
+\end{align}
+\begin{align}
+    \mu(s)=\frac{\eta(s)}{\sum_{s'}\eta(s')}\quad\forall s\in S
+\end{align}
+In continuing tasks the on-policy distribution is the stationary
+distribution under . In episodic tasks also depends on state initial
+probability.\\
+
+
+The goal of $\overline{\mbox{VE}}$ is to find a global optimum, namely a weight vector w* such that
+\begin{align}
+    \overline{\mbox{VE}}(w^*)\leq VE(w)\quad \forall w\in W
+\end{align}
+For simple tasks(e.g., linear
+models) is possible to achieve global optima but for complex ones(e.g., ANNs and decision trees) it is not always possible,there learning usually converges to local optima.
+\subsection{Stochastic-Gradient and Semi-Gradient Methods}
+Stochastic-Gradient methods are a class of learning methods for function approximation in value
+prediction based on Stochastic Gradient Descent (SGD).\\
+
+Before we start a bit of notation:
+\begin{itemize}
+    \item $\mathbf{w}\doteq(w_1,w_2,\dots,w_d)^T$ a weight vector
+    \item $\hat{v}(s, w)$ is a differentiable function of w for all states s
+\end{itemize}
+At each time step $0,1,2,3,\dots$ we observe a new example $S_t\mapsto v_\pi(S_t)$ and update $\mathbf{w}_t$.\\
+
+The goal of SGD is to minimize error on the observed examples it does so by adjusting $w$ after each example by a small amount in the direction that would most reduce the error on that example.
+\begin{align}
+    \mathbf{w}_{t+1}&\doteq \mathbf{w}_{t}-\frac{1}{2}\alpha\nabla[\underbrace{v_\pi(S_t)-\hat{v}(S_t, \mathbf{w}_{t})}_{Value\;Error}]^2 \\
+    &=\mathbf{w}_{t}+\alpha[v_\pi(S_t)-\hat{v}(S_t, \mathbf{w}_{t})]\nabla \hat{v}(S_t, \mathbf{w}_{t})
+    \label{eq:1}
+\end{align}
+where $\alpha>0$ is the learning rate and $\nabla f(\mathbf{w})\doteq\left(\frac{\partial f(\mathbf{w})}{\partial w_1}, \frac{\partial f(\mathbf{w})}{\partial w_2}), \dots, \frac{\partial f(\mathbf{w})}{\partial w_d}\right)^T$ gradient of f.
+
+The negative gradient is the direction in which the error falls most rapidly.\\
+
+Why performing only “small” steps? If we completely corrected each example in one step then we would not balance the error (which cannot be completely removed) on all samples.
+Convergence results on SGD assume that $\alpha$ decreses over time according to the following conditions:
+\begin{align*}
+    \sum^\infty_{n=1}\alpha_n=\infty\quad and \quad \sum^\infty_{n=1}\alpha^2_n<\infty
+\end{align*}
+\begin{itemize}
+    \item \textbf{First condition:} guarantees that the steps are large enough to eventually overcome any initial condition or random fluctuations.
+    \item \textbf{Second condition:} guarantees that eventually the steps become small enough to assure convergence
+\end{itemize}
+The problem with \ref{eq:1} is that $v_\pi(S_t)$ is unknown.
+
+In practice the \textbf{target output observed} at time $t$, $U_t\in\mathbb{R}$ is \textbf{not the true value} $v_\pi(S_t)$ but some random approximation of it (e.g, noisy corrupted value of $v_\pi(S_t)$ or a bootstrapping target) so we'll perform an approximate update:
+\begin{align}
+    \mathbf{w}_{t+1}\doteq\mathbf{w}_{t}+\alpha[U_t-\hat{v}(S_t, \mathbf{w}_{t})]\nabla \hat{v}(S_t, \mathbf{w}_{t})
+\end{align}
+If $U_t$ is an unbiased estimate of the value, i.e $\mathbb{E}[U_t|S_t=s]=v_\pi(S_t)$ then $\mathbf{w}_t$ is guaranteed to converge to converge to local optimum.\\
+
+The \textbf{Monte Carlo target} $U_t\doteq G_t$ is an unbiased estimate of $v_\pi(S_t)$, hence the SGD version of MC state-value prediction converges.\\
+
+\begin{tcolorbox}[colback=black!7!white,colframe=black!75!white,title=\textbf{Gradient Monte Carlo Algorithm for Estimating} $\mathbf{\hat{v}\approx v_\pi}$]
+Input: the policy $\pi$ to be evaluated\\
+Input: a differentiable function $\hat{v}: \mathcal{S}\times\mathbb{R}^d\rightarrow\mathbb{R}$\\
+Algorithm parameter: step size $\alpha > 0$\\
+Initialize value-function weights $\mathbf{w}\in\mathbb{R}^d$ arbitrarily (e.g., $\mathbf{w=0}$)\\
+
+Loop forever (for each episode):
+
+    \qquad Generate an episode $S_0, A_0, R_1, S_1, A_1,\dots,R_T,S_T$ using $\pi$
+
+    \qquad Loop for each step of episode, $t=0,1,\dots, T-1$:
+
+    \qquad\qquad $\mathbf{w}\leftarrow\mathbf{w}+\alpha[G_t-\hat{v}(S_t, \mathbf{w})]\nabla \hat{v}(S_t, \mathbf{w})$
+\end{tcolorbox}
+
+MC provides a non bootstrapping estimate of $v_\pi$. If a bootstrapping estimate is used as target then the convergence is not guaranteed, this because they depend on the current value of the
+weight vector $w_t$, which implies that they will be biased and that they will not produce a true gradient-descent method.\\
+
+Hence those methods are called semi-gradient methods since they take into account the effect of changing the weight vector $w_t$ on the estimate, but ignore its effect on the target, that means that they include only a part of the gradient. Although semi-gradient (bootstrapping) methods do not converge as robustly as gradient methods, they do converge reliably in important cases such as the linear case. Moreover, they offer important advantages that make them
+often clearly preferred. One reason for this is that they typically enable significantly faster learning. Another is that they enable learning to be continual and online, without waiting for the end of an episode.
+\begin{tcolorbox}[colback=black!7!white,colframe=black!75!white,title=\textbf{Semi-gradient TD(0) for Estimating} $\mathbf{\hat{v}\approx v_\pi}$]
+Input: the policy $\pi$ to be evaluated\\
+Input: a differentiable function $\hat{v}: \mathcal{S}^+\times\mathbb{R}^d\rightarrow\mathbb{R}$\\
+Algorithm parameter: step size $\alpha > 0$\\
+Initialize value-function weights $\mathbf{w}\in\mathbb{R}^d$ arbitrarily (e.g., $\mathbf{w=0}$)\\
+
+Loop for each episode:
+
+    \qquad Initialize S
+
+    \qquad Loop for each step of episode:
+
+    \qquad\qquad Choose $A\sim\pi(\cdot|S)$
+
+    \qquad\qquad Take action A, observe R, S'
+
+    \qquad\qquad $\mathbf{w}\leftarrow\mathbf{w}+\alpha[R+\gamma\hat{v}(S', \mathbf{w})-\hat{v}(S, \mathbf{w})]\nabla \hat{v}(S, \mathbf{w})$
+
+    \qquad\qquad $S\rightarrow S'$
+
+    \qquad until S is terminal
+\end{tcolorbox}
+
+\subsection{Linear Value Function Approximation}
+One of the most important special cases of function approximation is that in which the approximate function, $\hat{v}(\cdot,\mathbf{w})$, is a linear function of the weight vector, \textbf{w}. Corresponding to every state s, there is a real-valued feature vector $\mathbf{x}(s)\doteq (x_1(s), x_2(s), \dots, x_d(s))^T$ with the same number of components as \textbf{w}. Linear methods approximate state-value function by the inner product between \textbf{w} and \textbf{x}(s):
+\begin{align}
+    \hat{v}(s,\mathbf{w})\doteq \mathbf{w}^T\mathbf{x}(s)\doteq\sum_{i=1}^d w_i x_i(s)
+\end{align}
+In this case the approximate value function is said to be \textit{linear in the weights}, or simply \textit{linear}.
+
+It is natural to use SGD updates with linear function approximation. The gradient of the approximate value function with respect to $w$ in this case is
+\begin{align}
+    \nabla\hat{v}(s,\mathbf{w})&=\mathbf{x}(s)\\
+\end{align}
+Hence the SGD update becomes:
+\begin{align}
+    \mathbf{w}_{t+1}\doteq\mathbf{w}_{t}+\alpha&[U_t-\hat{v}(S_t, \mathbf{w}_{t})]\mathbf{x}(s)
+\end{align}
+Because it is so simple, the linear SGD case is one of the most favorable for mathematical analysis. Almost all useful convergence results for learning systems of all kinds are for linear (or simpler) function approximation methods.
+In particular, in the linear case there is only one optimum, and thus any method that is \textbf{guaranteed to converge} to a local optimum is automatically guaranteed to converge to the global optimum. Other advantages include data efficiency and computational efficiency.\\
+
+For example, the Gradient Monte Carlo algorithm converges to the global optimum of the $\overline{VE}$ under a linear function approximation if $\alpha$ is reduced over time according to the usual conditions. The semi-gradient TD(0) algorithm also converges under linear function approximation. This result requires a separate theorem (the weight vector converges to a point near the local optimum).
+
+The update at each time $t$ is:
+\begin{align}
+    \mathbf{w}_{t+1}&\doteq\mathbf{w}_t+\alpha\left(R_{t+1}+\gamma\mathbf{w}_t^T\mathbf{x}_{t+1}-\mathbf{w}_t^T\mathbf{x}_t\right)\mathbf{x}_t\\
+    &=\mathbf{w}_t+\alpha\left(R_{t+1}\mathbf{x}_t-\mathbf{x}_t(\mathbf{x}_t-\gamma\mathbf{x}_{t+1})^T\mathbf{w}_t\right)
+\end{align}
+Since the performance is highly dependent on feature construction an alternative to liar methods is DNN that aumatically creates the features.

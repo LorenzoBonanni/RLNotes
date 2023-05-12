@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{graphicx, geometry, wrapfig, xcolor, float, multicol, mathtools, array, csquotes, lscape, setspace}
+\usepackage[export]{adjustbox}
+\usepackage{tikz, tcolorbox}
+\usepackage{multirow, booktabs, makecell, diagbox}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    allcolors=.,
+    pdftitle={PDF TITLE},
+    linkcolor=blue
+    }
+% Required for inserting images
+\setlength{\parindent}{0mm}
+\DeclareMathOperator{\EX}{\mathbb{E}}% expected value
+
+\title{RL Notes}
+\author{lorenzopuntobonanni }
+\date{May 2023}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\include{sections/on_policy_prediction_w_approx}
+
+\end{document}
