@@ -1,7 +1,6 @@
 \newcommand{\splittedtext}[2]{\begin{matrix}\mbox{\footnotesize#1}\\\mbox{\footnotesize#2}\end{matrix}}
 
 \section{On-Policy Prediction with Approximation}
-\subsection{Introduction}
 If we want to apply a Reinforcement Learning method to a large state space problem by using tabular methods it becomes infeasible.
 For example if the state is represented by an image, the state space would be larger than the number of atoms in the universe.
 
@@ -150,7 +149,7 @@ Loop for each episode:
 
     \qquad\qquad $\mathbf{w}\leftarrow\mathbf{w}+\alpha[R+\gamma\hat{v}(S', \mathbf{w})-\hat{v}(S, \mathbf{w})]\nabla \hat{v}(S, \mathbf{w})$
 
-    \qquad\qquad $S\rightarrow S'$
+    \qquad\qquad $S\leftarrow S'$
 
     \qquad until S is terminal
 \end{tcolorbox}
@@ -180,4 +179,18 @@ The update at each time $t$ is:
     \mathbf{w}_{t+1}&\doteq\mathbf{w}_t+\alpha\left(R_{t+1}+\gamma\mathbf{w}_t^T\mathbf{x}_{t+1}-\mathbf{w}_t^T\mathbf{x}_t\right)\mathbf{x}_t\\
     &=\mathbf{w}_t+\alpha\left(R_{t+1}\mathbf{x}_t-\mathbf{x}_t(\mathbf{x}_t-\gamma\mathbf{x}_{t+1})^T\mathbf{w}_t\right)
 \end{align}
-Since the performance is highly dependent on feature construction an alternative to liar methods is DNN that aumatically creates the features.
+
+\subsection{Feature Constructions for Linear Methods}
+Linear methods are interesting because of their \textbf{convergence guarantees}, but also because in practice they can be very \textbf{efficient} in terms of both \textbf{data} and \textbf{computation}.
+Whether or not this is so \textbf{depends critically} on how the \textbf{states} are \textbf{represented} in terms of features. Choosing features appropriate to the task is an important way of adding prior domain knowledge to reinforcement learning systems. Intuitively, the features should correspond to the aspects of the state space along which generalization may be appropriate. If we are valuing geometric objects, for example, we might want to have features for each possible shape, color, size, or function. If we are valuing states of a mobile robot, then we might want to have features for locations, degrees of remaining battery power, recent sonar readings, and so on. One of the main limitations of linear approximation is that it cannot consider interactions between features for example in the pole-balancing task, high angular velocity can be either good or bed depending on the angle.
+A \textbf{linear} value \textbf{function cannot represent} this if this \textbf{features} are \textbf{coded separately} for the angle and the angular velocity
+
+\subsection{Nonlinear Value Function Approximation}
+There exist several non-linear methods for approximating the value
+function, such as:
+\begin{itemize}
+    \item Artificial Neural networks (ANNs)
+    \item Memory-based (nonparametric) functions
+    \item Memory-based (nonparametric) functions
+\end{itemize}
+ANNs have recently become the most popular approximation functions thanks to the fact that they are universal function approximators and that in deep architectures they can generate hierarchical representations of features automatically.

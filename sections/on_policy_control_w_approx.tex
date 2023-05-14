@@ -1,0 +1,93 @@
+
+\section{On-Policy Control with Approximation}
+In this chapter we return to the control problem, now with parametric approximation of the action-value function:
+\begin{align}
+    \hat{q}(s,a,\mathbf{w})\approx q_*(s,a)
+\end{align}
+We continue to restrict out attention to the on-policy and episodic case.
+\subsection{Episodic Semi-Gradient Control}
+The extension of state-value function approximators $\hat{v}(s,\mathbf{w})$ to action-value function approximators $\hat{q}(s,a,\mathbf{w})$ is straightforward.\\
+
+Whereas before we considered random training examples of the form $S_t\mapsto U_t$, now we consider examples of the form $S_t, A_t\mapsto U_t$. The update target $U_t$ can be any approximation of $q_\pi(S_t, A_t)$, including the usual backed-up values such as the full Monte Carlo return ($G_t$) or any
+of the \textit{n}-step Sarsa returns.\\
+
+The general gradient-descent update for action-value prediction is:
+\begin{align}
+    \mathbf{w}_{t+1}\doteq\mathbf{w}_t+\alpha[\textcolor{blue}{U_t}-\hat{q}(S_t, A_t, \mathbf{w}_t)]\nabla \hat{q}(S_t, A_t, \mathbf{w}_t)
+\end{align}
+
+For the one-step Sarsa method it is:
+\begin{align}
+    \mathbf{w}_{t+1}\doteq\mathbf{w}_t+\alpha[\textcolor{blue}{R_{t+1}+\gamma\hat{q}(S_{t+1}, A_{t+1}, \mathbf{w}_t)}-\hat{q}(S_t, A_t, \mathbf{w}_t)]\nabla \hat{q}(S_t, A_t, \mathbf{w}_t)
+\end{align}
+We call this method episodic semi-gradient one-step Sarsa.
+To form control methods, we need to couple such action-value prediction methods with techniques for policy improvement and action selection. If the action set is discrete and not too large, then we can use the techniques already developed in previous chapters. That is, for each possible action a available in the current state $S_t$, we can compute $q(S_t, A_t, \mathbf{w}_t)$ and then find the greedy action $A_t^*=arg\max_a \hat{q}(S_t, A_t, \mathbf{w}_t)$.
+
+Policy improvement is then performed by changing the estimation policy to a soft-approximation of the greedy policy, e.g., the $\varepsilon$-greedy policy.
+
+\begin{tcolorbox}[colback=black!7!white,colframe=black!75!white,title=\textbf{Episodic Semi-gradient Sarsa for Estimating} $\mathbf{\hat{q}\approx q_\pi}$]
+Input: a differentiable action-value function parameterization $\hat{q}: \mathcal{S}\times\mathcal{A}\times\mathbb{R}^d\rightarrow\mathbb{R}$\\
+Algorithm parameter: step size $\alpha > 0$, small $\varepsilon > 0$\\
+Initialize value-function weights $\mathbf{w}\in\mathbb{R}^d$ arbitrarily (e.g., $\mathbf{w=0}$)\\
+
+Loop for each episode:
+
+    \qquad Initialize S, A $\rightarrow$ initial state and action of episode (e.g., $\varepsilon$-greedy)
+
+    \qquad Loop for each step of episode:
+
+    \qquad\qquad Take action A, observe R, S'
+
+    \qquad\qquad If S' is terminal:
+
+        \qquad\qquad\qquad $\mathbf{w}\rightarrow\mathbf{w}+\alpha[R-\hat{q}(S, A, \mathbf{w})]\nabla \hat{q}(S, A, \mathbf{w})$
+
+        \qquad\qquad\qquad Go to next episode
+
+    \qquad\qquad Choose A' as a function of $\hat{q}(S', \cdot, \mathbf{w})$ (e.g., $\varepsilon$-greedy)
+
+    \qquad\qquad $\mathbf{w}\leftarrow\mathbf{w}+\alpha[R+\gamma\hat{q}(S, A, \mathbf{w})-\hat{q}(S, A, \mathbf{w})]\nabla \hat{q}(S, A, \mathbf{w})$
+    
+    \qquad\qquad $S\leftarrow S'$
+
+    \qquad\qquad $A\leftarrow A'$
+
+\end{tcolorbox}
+
+\subsection{Deep Q Networks}
+The basic idea of Deep Q Networks to use deep neural networks as a non-linear function approximator for the action value function in a semi-gradient form of Q-learning.
+
+The input of the Q network is the current state and the output is the estimated optimal action values for the input state.
+
+The semi-gradient form of Q-learning used by DQN to update the network’s weight is
+\begin{align}
+    \mathbf{w}_{t+1}=\mathbf{w}_t+\alpha[\underbrace{R_{t+1}+\gamma\max_a\hat{q}(S_{t+1}, a, \mathbf{w}_t)}_{Target\;value}-\underbrace{\hat{q}(S_t, A_t, \mathbf{w}_t)}_{Action\;value}]\nabla \hat{q}(S_t, A_t, \mathbf{w}_t)
+\end{align}
+The problem with this is RL is unstable or even deverges with nonlinear function approximators (e.g., ANNs) of the action-value function (Minh et al., 2015).
+This is caused mainly by three things:
+\begin{enumerate}
+    \item Correlations in the sequence of observations
+    \item Small updates to q may significantly change the policy and change data distribution
+    \item Correlation between action-values $\hat{q}(S_t, A_t, \mathbf{w}_t)$ and target values $R_{t+1}+\gamma\max_a\hat{q}(S_{t+1}, A_{t+1}, \mathbf{w}_t)$
+\end{enumerate}
+The solutions to those problems are:
+\begin{enumerate}
+    \item A biologically inspired mechanism for \textbf{experience replay}
+    \item The usage of \textbf{two separate networks} to estimate action values in the Q-network and the target value
+\end{enumerate}
+\subsubsection{Experience Replay}
+The idea is to store agent experience in a replay memory then used to perform weight updates. After each step a tuple $(S_t, A_t, R_{t+1}, S_{t+1})$ is added to the replay memory. This experience is accumulated over many episodes.
+
+At each step  multiple Q-learning updates (a mini-batch) are performed based on experience sampled uniformly at random from the replay memory.
+This has two main advantages:
+\begin{enumerate}
+    \item Reduced variance of weight update (reduces cause 2)
+    \item The correlation in the sequences of observations is eliminated and hence one source instability is removed (reduces cause 1)
+\end{enumerate}
+\subsubsection{Double DQN}
+Two networks are used. One for estimating action values, another for estimating target values.
+The new update rule is:
+\begin{align}
+    \mathbf{w}_{t+1}=\mathbf{w}_t+\alpha[R_{t+1}+\gamma\max_a\underbrace{\colorbox{red!60!white}{$\hat{q}(S_{t+1}, a, \mathbf{w}_t)$}}_{ANN\;2}-\underbrace{\colorbox{lime}{$\hat{q}(S_t, A_t, \mathbf{w}_t$})}_{ANN\;1}]\nabla \underbrace{\colorbox{lime}{$\hat{q}(S_t, A_t, \mathbf{w}_t)$}}_{ANN\;1}
+\end{align}
+After C updates of the weights w of the action-value network (ANN 1) these weights are copied to the second network (ANN 2) used to compute the target values. By doing so we are improving stability and reducing cause 3.
