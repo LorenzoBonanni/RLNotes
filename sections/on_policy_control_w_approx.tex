@@ -66,7 +66,7 @@ The semi-gradient form of Q-learning used by DQN to update the network’s weigh
 The problem with this is RL is unstable or even deverges with nonlinear function approximators (e.g., ANNs) of the action-value function (Minh et al., 2015).
 This is caused mainly by three things:
 \begin{enumerate}
-    \item Correlations in the sequence of observations
+    \item \textbf{Correlations in the sequence of observations}: most deep learning algorithms assume the data samples to be independent, while in reinforcement learning one typically encounters sequences of highly correlated states. 
     \item Small updates to q may significantly change the policy and change data distribution
     \item Correlation between action-values $\hat{q}(S_t, A_t, \mathbf{w}_t)$ and target values $R_{t+1}+\gamma\max_a\hat{q}(S_{t+1}, A_{t+1}, \mathbf{w}_t)$
 \end{enumerate}
@@ -76,18 +76,19 @@ The solutions to those problems are:
     \item The usage of \textbf{two separate networks} to estimate action values in the Q-network and the target value
 \end{enumerate}
 \subsubsection{Experience Replay}
-The idea is to store agent experience in a replay memory then used to perform weight updates. After each step a tuple $(S_t, A_t, R_{t+1}, S_{t+1})$ is added to the replay memory. This experience is accumulated over many episodes.
-
-At each step  multiple Q-learning updates (a mini-batch) are performed based on experience sampled uniformly at random from the replay memory.
+The idea is to store agent experience in a replay memory then used to perform weight updates. After each step a tuple $(S_t, A_t, R_{t+1}, S_{t+1})$ is added to the replay memory. This experience is accumulated over many episodes. At each step  multiple Q-learning \textbf{updates} (a mini-batch) are performed based on experience \textbf{sampled} uniformly at \textbf{random} from the replay memory.
 This has two main advantages:
 \begin{enumerate}
     \item Reduced variance of weight update (reduces cause 2)
     \item The correlation in the sequences of observations is eliminated and hence one source instability is removed (reduces cause 1)
 \end{enumerate}
+When learning on-policy the current parameters determine the next data sample that the parameters are trained on. For example, if the maximizing action is to move left then the training samples will be dominated by samples from the left-hand side; if the maximizing action then switches to the right then the training distribution will also switch. It is easy to see how unwanted feedback loops may arise and the parameters could get stuck in a poor local minimum, or even diverge catastrophically. By using experience replay the behavior distribution is averaged over many of its previous states, smoothing out learning and avoiding oscillations or divergence in the parameters
+
 \subsubsection{Double DQN}
 Two networks are used. One for estimating action values, another for estimating target values.
 The new update rule is:
 \begin{align}
-    \mathbf{w}_{t+1}=\mathbf{w}_t+\alpha[R_{t+1}+\gamma\max_a\underbrace{\colorbox{red!60!white}{$\hat{q}(S_{t+1}, a, \mathbf{w}_t)$}}_{ANN\;2}-\underbrace{\colorbox{lime}{$\hat{q}(S_t, A_t, \mathbf{w}_t$})}_{ANN\;1}]\nabla \underbrace{\colorbox{lime}{$\hat{q}(S_t, A_t, \mathbf{w}_t)$}}_{ANN\;1}
+    \mathbf{w}_{t+1}=\mathbf{w}_t+\alpha[R_{t+1}+\gamma\max_a\underbrace{\colorbox{red!60!white}{$\Tilde{q}(S_{t+1}, a, \mathbf{w}_t)$}}_{ANN\;2}-\underbrace{\colorbox{lime}{$\hat{q}(S_t, A_t, \mathbf{w}_t$})}_{ANN\;1}]\nabla \underbrace{\colorbox{lime}{$\hat{q}(S_t, A_t, \mathbf{w}_t)$}}_{ANN\;1}
 \end{align}
 After C updates of the weights w of the action-value network (ANN 1) these weights are copied to the second network (ANN 2) used to compute the target values. By doing so we are improving stability and reducing cause 3.
+

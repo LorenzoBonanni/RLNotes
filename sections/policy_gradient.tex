@@ -1,0 +1,54 @@
+\section{Policy Gradient Methods}
+All methods seen so far are action-value methods. They estimate action values and then select actions based on these values but they don't explicitly represent the policy function.\\
+
+\textbf{Policy gradient methods} are different they learn a parameterized policy function $\pi(a|s, \theta)$ and then selects actions using this policy without consulting value functions. A value
+function may still be used to learn the policy parameter $\bm{\theta}$, but is not required for action selection.
+
+\textbf{Actor Critic methods} are policy gradient methods that learn also approximations of the value function more specifically they are composed of two parts:
+\begin{itemize}
+    \item Actor: learn policy function
+    \item Critic: learn value function
+\end{itemize}
+
+Before we start let's introduce some notation:
+\begin{itemize}
+    \item $\bm{\theta}\in\mathbb{R}^{d'}$ is the policy's parameter vector
+    \item $\pi(a|s, \bm{\theta})=Pr\{A_t=a|S_t=s,\bm{\theta}_t=\bm{\theta}\}$
+    \item $\hat{v}(s, \bm{w})$ is the learned \textbf{value function}, if required by the method, with parameters $\bm{w}\in\mathbb{R}^{d}$
+    \item $J(\bm{\theta})$ is a measure of policy performance depending on policy parameters
+\end{itemize}
+
+The goal of policy gradient methods is to learn parameters $\bm{\theta}$ that maximize $J(\bm{\theta})$\\
+
+Parameter updates approximate gradient ascent in $J$:
+\begin{align}
+    \bm{\theta}_{t+1}=\bm{\theta}_t+\alpha\widehat{\nabla J(\bm{\theta}_t})
+\end{align}
+where $\widehat{\nabla J(\bm{\theta}_t})\in \mathbb{R}^{d'}$ is a stochastic estimate of the gradient of $J(\bm{\theta})$ w.r.t $\bm{\theta}_t$.
+
+In the \textbf{episodic case} performance is the value of the start state under the parameterized policy.
+
+Instead in the \textbf{continuing case} performance is the average reward rate.
+
+\subsection{Policy Approximation and its Advantages}
+In policy gradient methods, the policy can be parameterized in any way as long as $\pi(a|s, \bm{\theta})$ is differentiable w.r.t its parameters. In practice to ensure exploration we require the policy never to become deterministic, (i.e that $\pi(a|s, \bm{\theta})\in(0,1)$).
+
+If the action space is Discrete (and not too large) then a natural and common kind of parameterization is to form parameterized numerical preferences $h(s,a,\bm{\theta})\in\mathbb{R}$ for each state-action pair.
+Probability is assigned to actions proportionally to preferences, e.g., according to exponential soft-max distribution(called soft-max in action preferences)
+    \begin{align*}
+         \pi(a|s, \bm{\theta})\doteq\frac{e^{h(s,a,\bm{\theta})}}{\sum_b e^{h(s,b,\bm{\theta})}}
+    \end{align*}
+
+Preferences can themselves be parameterized arbitrarily for example they might be computed by a deep ANN. In this case $\theta$ is a vector of connection weights or the preferences could be linear in the features: $h(s,a,\bm{\theta})=\bm{\theta}^T\bm{x}(s,a)$ with $\bm{x}(s,a)\in \mathbb{R}^{d'}$ features of the policy.
+
+Action values could be used as preferences with soft-max but this would not allow the policy to approach deterministic behaviours. Instead, general action preferences do not have to approach specific values allowing them to approach also deterministic policies.
+
+\subsubsection{Advantages of policy parametrization vs action value parametrization}
+\begin{enumerate}
+    \item The \textbf{policy} may be a \textbf{simpler} function to approximate
+    \item Policy parametrization \textbf{allows to inject prior knowledge}: this is often the most important reason to use for using a policy-based learning method
+    \item Action-value methods have no natural way of finding \textbf{stochastic policies}, while policy gradient methods (e.g., with soft-max in action preferences) enables the selection of actions with arbitrary probabilities (e.g., stochastic policies)
+    \item Policy-based methods can deal with \textbf{continuous action spaces}
+\end{enumerate}
+
+\section{The Policy Gradient Theorem}

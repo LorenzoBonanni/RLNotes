@@ -1,7 +1,7 @@
 \documentclass{article}
 \usepackage{graphicx} 
 \usepackage[utf8]{inputenc}
-\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{amsmath, amsfonts, amssymb, bm}
 \usepackage{graphicx, geometry, wrapfig, xcolor, float, multicol, mathtools, array, csquotes, lscape, setspace}
 \usepackage[export]{adjustbox}
 \usepackage{tikz, tcolorbox}
@@ -14,13 +14,19 @@
     pdftitle={PDF TITLE},
     linkcolor=blue
     }
+\geometry{
+    top=3.5cm,
+    bottom=3.0cm,
+    outer=2.0cm,
+    inner=3.0cm
+}
 % Required for inserting images
 \setlength{\parindent}{0mm}
 \DeclareMathOperator{\EX}{\mathbb{E}}% expected value
 
-\title{RL Notes}
-\author{lorenzopuntobonanni }
-\date{May 2023}
+\title{Reinforcement Learning Course}
+\author{Lorenzo Bonanni }
+\date{Academic Year: 2023/2024}
 
 \begin{document}
 
@@ -29,6 +35,6 @@
 
 \include{sections/on_policy_prediction_w_approx}
 \include{sections/on_policy_control_w_approx}
-
+\include{sections/policy_gradient}
 
 \end{document}
