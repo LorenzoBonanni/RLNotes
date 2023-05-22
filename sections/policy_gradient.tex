@@ -1,34 +1,33 @@
 \section{Policy Gradient Methods}
-All methods seen so far are action-value methods. They estimate action values and then select actions based on these values but they don't explicitly represent the policy function.\\
+So far, all the methods we have discussed are action-value methods. These methods estimate action values and use them to select actions, but they do not explicitly represent the policy function.\\
 
-\textbf{Policy gradient methods} are different they learn a parameterized policy function $\pi(a|s, \theta)$ and then selects actions using this policy without consulting value functions. A value
-function may still be used to learn the policy parameter $\bm{\theta}$, but is not required for action selection.
+In contrast, {policy gradient methods take a different approach. They learn a parameterized policy function $\pi(a|s, \theta)$and use this function to select actions without relying on value functions. Although a value function can still be used to learn the policy parameter $\bm{\theta}$, it is not necessary for action selection.
 
-\textbf{Actor Critic methods} are policy gradient methods that learn also approximations of the value function more specifically they are composed of two parts:
+Actor Critic methods are a type of policy gradient methods that also approximate the value function. They consist of two main components:
 \begin{itemize}
     \item Actor: learn policy function
     \item Critic: learn value function
 \end{itemize}
 
-Before we start let's introduce some notation:
+Before we proceed, let's introduce some notation:
 \begin{itemize}
-    \item $\bm{\theta}\in\mathbb{R}^{d'}$ is the policy's parameter vector
-    \item $\pi(a|s, \bm{\theta})=Pr\{A_t=a|S_t=s,\bm{\theta}_t=\bm{\theta}\}$
-    \item $\hat{v}(s, \bm{w})$ is the learned \textbf{value function}, if required by the method, with parameters $\bm{w}\in\mathbb{R}^{d}$
-    \item $J(\bm{\theta})$ is a measure of policy performance depending on policy parameters
+    \item The policy's parameter vector is denoted as $\bm{\theta}\in\mathbb{R}^{d'}$.
+    \item $\pi(a|s, \bm{\theta})$ represents the probability of selecting action $a$ given state $s$ and policy parameters $\bm{\theta}$. In other words, $\pi(a|s, \bm{\theta})=Pr\{A_t=a|S_t=s,\bm{\theta}_t=\bm{\theta}\}$.
+    \item If the method requires it, the learned value function is denoted as $\hat{v}(s, \bm{w})$ and it has parameters $\bm{w}\in\mathbb{R}^{d}$.
+    \item $J(\bm{\theta})$ denotes a measure of policy performance, which depends on the policy parameters."
 \end{itemize}
 
-The goal of policy gradient methods is to learn parameters $\bm{\theta}$ that maximize $J(\bm{\theta})$\\
+The objective of policy gradient methods is to find the optimal parameters $\bm{\theta}$ that maximize the performance measure $J(\bm{\theta})$.
 
-Parameter updates approximate gradient ascent in $J$:
+The parameter updates in these methods can be approximated using gradient ascent, as follows:
+
 \begin{align}
-    \bm{\theta}_{t+1}=\bm{\theta}_t+\alpha\widehat{\nabla J(\bm{\theta}_t})
+\bm{\theta}_{t+1} = \bm{\theta}_t + \alpha \widehat{\nabla J(\bm{\theta}_t})
 \end{align}
-where $\widehat{\nabla J(\bm{\theta}_t})\in \mathbb{R}^{d'}$ is a stochastic estimate of the gradient of $J(\bm{\theta})$ w.r.t $\bm{\theta}_t$.
 
-In the \textbf{episodic case} performance is the value of the start state under the parameterized policy.
+Here, $\widehat{\nabla J(\bm{\theta}_t})\in \mathbb{R}^{d'}$ represents a stochastic estimate of the gradient of $J(\bm{\theta})$ with respect to $\bm{\theta}_t$. The learning rate is denoted by $\alpha$.\\
 
-Instead in the \textbf{continuing case} performance is the average reward rate.
+In the episodic case, the performance is measured by the value of the starting state under the parameterized policy. In contrast, in the continuing case, performance is assessed based on the average reward rate.
 
 \subsection{Policy Approximation and its Advantages}
 In policy gradient methods, the policy can be parameterized in any way as long as $\pi(a|s, \bm{\theta})$ is differentiable w.r.t its parameters. In practice to ensure exploration we require the policy never to become deterministic, (i.e that $\pi(a|s, \bm{\theta})\in(0,1)$).
@@ -43,12 +42,149 @@ Preferences can themselves be parameterized arbitrarily for example they might b
 
 Action values could be used as preferences with soft-max but this would not allow the policy to approach deterministic behaviours. Instead, general action preferences do not have to approach specific values allowing them to approach also deterministic policies.
 
-\subsubsection{Advantages of policy parametrization vs action value parametrization}
+\subsection{Advantages of Policy Parametrization over Action Value Parametrization}
+When comparing policy parametrization with action value parametrization, the former offers several advantages:
+
 \begin{enumerate}
-    \item The \textbf{policy} may be a \textbf{simpler} function to approximate
-    \item Policy parametrization \textbf{allows to inject prior knowledge}: this is often the most important reason to use for using a policy-based learning method
-    \item Action-value methods have no natural way of finding \textbf{stochastic policies}, while policy gradient methods (e.g., with soft-max in action preferences) enables the selection of actions with arbitrary probabilities (e.g., stochastic policies)
-    \item Policy-based methods can deal with \textbf{continuous action spaces}
+\item The policy function is often simpler and easier to approximate compared to the action-value function.
+\item Policy parametrization allows for the incorporation of prior knowledge, which is a significant benefit and a common reason for choosing policy-based learning methods.
+\item Unlike action-value methods, policy gradient methods (such as those employing soft-max in action preferences) facilitate the selection of actions with arbitrary probabilities, thus supporting the use of stochastic policies.
+\item Policy-based methods can effectively handle continuous action spaces, whereas action-value methods may face challenges in such scenarios due to their inability to directly handle continuous actions.
 \end{enumerate}
 
-\section{The Policy Gradient Theorem}
+\subsection{The Policy Gradient Theorem}
+In addition to the practical advantages of policy parameterization over $\varepsilon$-greedy action selection, there is also an important theoretical advantage. With continuous policy
+parameterization the action probabilities change smoothly as a function of the learned
+parameter, whereas in $\varepsilon$-greedy selection the action probabilities may change dramatically for an arbitrarily small change in the estimated action values.
+Largely due to this characteristic, policy-gradient methods offer stronger convergence guarantees compared to action-value methods.\\
+
+With function approximation, it may seem challenging to change the policy parameter in a way that ensures improvement. The problem is that \textbf{performance} depends on both the \textbf{action selections} and the \textbf{distribution of states} in which those selections are made, and that both of these are affected by the \textbf{policy parameter}. Given a state, the effect of the policy parameter on the actions, and thus on reward, can be computed in a relatively straightforward way from knowledge of the parameterization. But the effect of the policy on the state distribution is a function of the environment and is typically unknown. How can we estimate the performance gradient with respect to the policy parameter when the gradient depends on the unknown effect of policy changes on the state distribution?\\
+\begin{center}
+\begin{tikzpicture}[
+roundnode/.style={circle, draw=black!60, fill=black!5, very thick, minimum size=7mm},
+squarednode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
+]
+    \node[squarednode]      (maintopic)                                                       {$J(\theta)$};
+    \node[roundnode]        (rightcircle1)       [right=of maintopic]                         {$\pi(a)$};
+    \node[roundnode]        (rightcircle2)       [right=of maintopic, below=of rightcircle1]  {$p(s)$};
+    \node[roundnode]        (transition)         [right=of rightcircle2]                      {$T$};
+    \node[squarednode]      (weights)            [right=of rightcircle1]                      {$\theta_{t+1}=\theta+\color{blue}?$};
+    \node[]                 (text)               [right=of transition]                        {unknown};
+    
+    \draw[->] (maintopic.east)-- (rightcircle1.west);
+    \draw[->] (maintopic.east) -- (rightcircle2.west);
+    \draw[->] (rightcircle2.east) -- (transition.west);
+    \draw[->] (rightcircle1.east) -- (weights.west);
+    \draw[->] (rightcircle2.east) -- (weights.west);
+    \draw[->, color=blue] (weights.north) to [out=150, in=40](maintopic.north);
+    \draw[->] (text.west) -- (transition.east);
+\end{tikzpicture}
+\end{center}
+
+\begin{tcolorbox}[colbacktitle=black!7!white,coltitle=black!75!white,title=\textbf{Proof of the Policy Gradient Theorem (episodic case)}]
+With just elementary calculus and re-arranging of terms, we can prove the policy gradient theorem from first principles. To keep the notation simple, we leave it implicit in all cases that $\pi$ is a function of $\theta$, and all gradients are also implicitly with respect to $\theta$. First note that the gradient of the state-value function can be written in terms of the action-value function as
+\begin{align*}
+    \textcolor{blue}{\nabla v_\pi(s)}&=\nabla\Big[\sum_a\pi(a|s)q_\pi(s,a)\Big],\quad for\;all\;s\in S\\
+    &=\sum_a\Big[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\nabla q_\pi(s,a)\Big]\\
+    &=\sum_a\Big[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\nabla\sum_{s',r}p(s',r|s,a)(r+v_\pi(s') \Big]\\
+    &=\sum_a\Bigg[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\sum_{s'}p(s'|s,a)\textcolor{blue}{\nabla v_\pi(s')} \Bigg]\\
+    &=\sum_a\Bigg[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\sum_{s'}p(s'|s,a) \;\backslash \\
+    &\quad\quad\textcolor{blue}{\sum_{a'}\Big[\nabla\pi(a'|s')q_\pi(s',a')+\pi(a'|s')\sum_{s''}p(s''|s',a')\nabla v_\pi(s'')\Big]}\Bigg]\\
+    &=\sum_{x\in\mathcal{S}}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k, \pi)\sum_a\nabla\pi(a|x)q_\pi(x,a)
+\end{align*}
+after repeated unrolling, where $Pr(s\rightarrow x, k, \pi)$ is the probability of transitioning
+from state s to state $x$ in $k$ steps under policy $\pi$. It is then immediate that
+\begin{align*}
+    \nabla J(\theta)&=\nabla v_\pi(s_0)\\
+    &=\sum_{s}\Big(\sum_{k=0}^{\infty} Pr(s_0\rightarrow s, k, \pi)\Big)\sum_a\nabla\pi(a|s)q_\pi(s,a)\\
+    &=\sum_{s}\eta(s)\sum_a\nabla\pi(a|s)q_\pi(s,a)\\
+    &=\textcolor{red}{\sum_{s'}\eta(s')}\sum_{s}\frac{\eta(s)}{\textcolor{red}{\sum_{s'}\eta(s')}}\sum_a\nabla\pi(a|s)q_\pi(s,a)\\
+    &=\sum_{s'}\eta(s')\sum_{s}\mu(s)\sum_a\nabla\pi(a|s)q_\pi(s,a)\quad\text{on-policy distribution}\; \mu(s)=\frac{\eta(s)}{\sum_{s'}\eta(s')}\\
+    &\propto\sum_{s}\mu(s)\sum_a\nabla\pi(a|s)q_\pi(s,a)
+\end{align*}
+
+Recall that
+\begin{align*}
+    v_\pi(s)&=\sum_a \pi(a|s)q_\pi(s,a)\\
+    q_\pi(s, a)&=\sum_{s', r} p(s', r|s,a)(r+v_\pi(s'))
+\end{align*}
+\end{tcolorbox}
+Fortunately, there is an excellent theoretical answer to this challenge in the form of the policy gradient theorem, which provides an analytic expression for the gradient of performance with respect to the policy parameter that does \textit{not} involve the derivative of the state distribution.
+
+The policy gradient theorem for the episodic case establishes that:
+\begin{align}
+    \nabla J(\bm{\theta})\propto\sum_{s}\mu(s)\sum_a q_\pi(s,a)\nabla\pi(a|s, \bm{\theta})
+\end{align}
+
+\subsection{REINFORCE: Monte Carlo Policy Gradient}
+Given the strategy of stochastic gradient ascent seen before
+\begin{align}\label{eq:3}
+\bm{\theta}_{t+1} = \bm{\theta}_t + \alpha \widehat{\nabla J(\bm{\theta}_t})
+\end{align}
+we need a way to obtain samples such that the expectation of the sample gradient $\widehat{\nabla J(\bm{\theta}_t})$ is proportional to the actual gradient $\nabla J(\bm{\theta}_t)$ the policy gradient theorem provides an exact expression proportional to the gradient, hence we use it for sampling from that expression.
+We have that 
+\begin{align}\label{eq:2}
+    \nabla J(\bm{\theta})&\propto\sum_{s}\mu(s)\sum_a q_\pi(s,a)\nabla\pi(a|s, \bm{\theta})\\
+    &=\mathbb{E}_\pi\Big[\sum_a q_\pi(S_t,a)\nabla\pi(a|S_t, \bm{\theta})\Big]
+\end{align}
+Notice that the right-hand side of the policy gradient theorem is a sum over states weighted by how often the states occur under the target policy $\pi$; if $\pi$ is followed, then states will be encountered in these proportions.
+Then, we can instantiate a first stochastic gradient-ascent algorithm as
+\begin{align}
+    \bm{\theta}_{t+1}\doteq\bm{\theta}_t+\alpha\underbrace{\sum_a \hat{q}(S_t,a, \bm{w})\nabla\pi(a|S_t, \bm{\theta})}_{\widehat{\nabla J(\bm{\theta}_t})}
+\end{align}
+where is $\hat{q}$ some learned approximation of $q_\pi$.
+We call this algorithm \textit{all-actions} because its update involves all of the actions.
+If we consider instead only the action $A_t$ taken at time $t$ we obtain the \textbf{REINFORCE algorithm}.
+We continue our derivation of REINFORCE by introducing $A_t$ in the same way as we introduced $S_t$ in \ref{eq:2} by replacing a sum over the random variable’s possible values by an expectation under $\pi$, and then sampling the expectation.
+\begin{align*}
+    \nabla J(\bm{\theta})&=\mathbb{E}_\pi\Big[\sum_a \textcolor{red}{\pi(a|S_t, \bm{\theta})}q_\pi(S_t,a)\frac{\nabla\pi(a|S_t, \bm{\theta})}{\textcolor{red}{\pi(a|S_t, \bm{\theta})}}\Big]\\
+    &=\mathbb{E}_\pi\Big[q_\pi(S_t, A_t)\frac{\nabla\pi(A_t|S_t, \bm{\theta})}{\pi(A_t|S_t, \bm{\theta})}\Big] \qquad\text{(replacing $a$ by the sample $A_t\sim\pi$)}\\
+    &=\mathbb{E}_\pi\Big[G_t\frac{\nabla\pi(A_t|S_t, \bm{\theta})}{\pi(A_t|S_t, \bm{\theta})}\Big] \qquad\text{because $\mathbb{E}_\pi[G_t|S_t,A_t]=q_\pi(S_t, A_t)$}
+\end{align*}
+where $G_t$ is the return as usual. The final expression in brackets is exactly what is needed, a quantity that can be sampled on each time step whose expectation is equal to the gradient. Using this sample to instantiate our generic stochastic gradient ascent algorithm \ref{eq:3} yields the REINFORCE update:
+\begin{align}\label{eq:4}
+\bm{\theta}_{t+1} = \bm{\theta}_t + \alpha G_t\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta})_t}
+\end{align}
+This update has an intuitive appeal. Each increment is proportional to the product of a return $G_t$ and the vector $\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta})_t}$. The vector is the direction in parameter space that most increases the probability of repeating the action $A_t$ on future visits to state $S_t$.
+The update increases the parameter vector in this direction proportional to the return, and inversely proportional to the action probability. The former makes sense because it causes the parameter to move most in the directions that favor actions that yield the highest return. The latter makes sense because otherwise actions that are selected frequently are at an advantage (the updates will be more often in their direction) and might win out even if they do not yield the highest return.
+
+Note that REINFORCE uses the complete return from time $t$, which includes all future rewards up until the end of the episode. In this sense REINFORCE is a Monte Carlo algorithm and is well defined only for the episodic case with all updates made in retrospect after the episode is completed.
+
+\begin{tcolorbox}[colback=black!7!white,colframe=black!75!white,title=\textbf{REINFORCE: Monte-Carlo Policy-Gradient Control (episodic) for $\pi_*$}]
+Input: a differentiable policy parameterization $\pi(a|s,\bm{\theta})$\\
+Algorithm parameter: step size $\alpha > 0$\\
+Initialize policy parameter $\bm{\theta}\in\mathbb{R}^d$ arbitrarily (e.g., to $\bm{0}$)\\
+
+Loop forever (for each episode):
+    \qquad Generate an episode $S_0, A_0, R_1, S_1, A_1,\dots,R_T,S_T$ using $\pi$
+    
+    \qquad Loop for each step of episode, $t=0,1,\dots, T-1$:
+
+    \qquad\qquad $G\rightarrow\sum_{k=t+1}^T\gamma^{k-t-1}R_k$\\
+    \qquad\qquad$\bm{\theta}\rightarrow \bm{\theta}+\alpha\gamma^tG\nabla\ln\pi(A_t|S_t, \bm{\theta})$
+\end{tcolorbox}
+Notice that the update in the last line of seudocode appears rather different from the REINFORCE update rule \ref{eq:4}. One difference is that the pseudocode uses the compact expression $\nabla\ln\pi(A_t|S_t, \bm{\theta})$ for the fractional vector $\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta})_t}$. 
+
+That these two expressions for the vector are equivalent follows from the identity $\nabla\ln x=\frac{\nabla x}{x}$.
+The second difference between the pseudocode update and the REINFORCE update equation is that the former includes a factor of $\gamma_t$. This is because for the derivation we are treating the non-discounted case ($\gamma=1$) while in the boxed
+algorithms we are giving the algorithms for the general discounted case.\\
+
+As a stochastic gradient method, REINFORCE has good theoretical convergence properties. By construction, the expected update over an episode is in the same direction as the performance gradient. This assures an improvement in expected performance for sufficiently small $\alpha$, and convergence to a local optimum under standard stochastic approximation conditions for decreasing $\alpha$. However, as a Monte Carlo method REINFORCE may be of high variance and thus produce slow learning.
+
+\subsection{REINFORCE with Baseline}
+To solve the previously described problem of high variance the policy gradient theorem can be generalized to include a comparison of the
+action value to an arbitrary baseline $b(s)$:
+\begin{align}\label{eq:5}
+    \nabla J(\bm{\theta})\propto\sum_{s}\mu(s)\sum_a \Big(q_\pi(s,a)-b(s)\Big)\nabla\pi(a|s, \bm{\theta})
+\end{align}
+The baseline can be any function, even a random variable, as long as it does not vary with $a$; the equation remains valid because the subtracted quantity is zero:
+\begin{align*}
+    \sum_a b(s)\nabla\pi(a|s, \bm{\theta})=b(s)\nabla\sum_a\pi(a|s, \bm{\theta})=b(s)\nabla 1=0
+\end{align*}
+The policy gradient theorem with baseline \ref{eq:5} can be used to derive an update
+rule using similar steps as in the previous section. The update rule that we end up with
+is a new version of REINFORCE that includes a general baseline:
+\begin{align}
+    \bm{\theta}_{t+1}\doteq\bm{\theta}_t+\alpha\Big(G_t-b(S_t)\Big)\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta}_t)}
+\end{align}
+Because the baseline could be uniformly zero, this update is a strict generalization of REINFORCE. In general, the baseline leaves the expected value of the update unchanged, but it can have a large effect on its variance.

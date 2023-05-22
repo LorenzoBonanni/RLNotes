@@ -91,4 +91,3 @@ The new update rule is:
     \mathbf{w}_{t+1}=\mathbf{w}_t+\alpha[R_{t+1}+\gamma\max_a\underbrace{\colorbox{red!60!white}{$\Tilde{q}(S_{t+1}, a, \mathbf{w}_t)$}}_{ANN\;2}-\underbrace{\colorbox{lime}{$\hat{q}(S_t, A_t, \mathbf{w}_t$})}_{ANN\;1}]\nabla \underbrace{\colorbox{lime}{$\hat{q}(S_t, A_t, \mathbf{w}_t)$}}_{ANN\;1}
 \end{align}
 After C updates of the weights w of the action-value network (ANN 1) these weights are copied to the second network (ANN 2) used to compute the target values. By doing so we are improving stability and reducing cause 3.
-
