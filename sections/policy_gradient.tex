@@ -156,12 +156,10 @@ Algorithm parameter: step size $\alpha > 0$\\
 Initialize policy parameter $\bm{\theta}\in\mathbb{R}^d$ arbitrarily (e.g., to $\bm{0}$)\\
 
 Loop forever (for each episode):
-    \qquad Generate an episode $S_0, A_0, R_1, S_1, A_1,\dots,R_T,S_T$ using $\pi$
-    
-    \qquad Loop for each step of episode, $t=0,1,\dots, T-1$:
-
-    \qquad\qquad $G\rightarrow\sum_{k=t+1}^T\gamma^{k-t-1}R_k$\\
-    \qquad\qquad$\bm{\theta}\rightarrow \bm{\theta}+\alpha\gamma^tG\nabla\ln\pi(A_t|S_t, \bm{\theta})$
+    \qquad Generate an episode $S_0, A_0, R_1, S_1, A_1,\dots,R_T,S_T$ using $\pi$\\
+    \qquad Loop for each step of episode, $t=0,1,\dots, T-1$:\\
+    \qquad\qquad $G\leftarrow\sum_{k=t+1}^T\gamma^{k-t-1}R_k$\\
+    \qquad\qquad $\bm{\theta}\leftarrow \bm{\theta}+\alpha\gamma^tG\nabla\ln\pi(A_t|S_t, \bm{\theta})$
 \end{tcolorbox}
 Notice that the update in the last line of seudocode appears rather different from the REINFORCE update rule \ref{eq:4}. One difference is that the pseudocode uses the compact expression $\nabla\ln\pi(A_t|S_t, \bm{\theta})$ for the fractional vector $\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta})_t}$. 
 
@@ -188,3 +186,21 @@ is a new version of REINFORCE that includes a general baseline:
     \bm{\theta}_{t+1}\doteq\bm{\theta}_t+\alpha\Big(G_t-b(S_t)\Big)\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta}_t)}
 \end{align}
 Because the baseline could be uniformly zero, this update is a strict generalization of REINFORCE. In general, the baseline leaves the expected value of the update unchanged, but it can have a large effect on its variance.
+One natural choice for the baseline is an estimate of the state value, $\hat{v}(S_t,\bm{w})$, where $\bm{w}\in \mathbb{R}^m$ is a weight vector learned by one of the methods presented in previous chapters.
+Because REINFORCE is a Monte Carlo method for learning the policy parameter, $\bm{\theta}$,
+it seems natural to also use a Monte Carlo method to learn the state-value weights, $\bm{w}$.
+
+\begin{tcolorbox}[colback=black!7!white,colframe=black!75!white,title=\textbf{REINFORCE with Baseline (episodic), for $\pi_\theta\approx\pi_* $}]
+    Input: a differentiable policy parameterization $\pi(a|s,\bm{\theta})$\\
+    Input: a differentiable state-value function parameterization $\hat{v}(s,\bm{w})$\\
+    Algorithm parameter: step sizes $\alpha^{\bm{\theta}} > 0, \alpha^{\bm{w}} > 0$\\
+    Initialize policy parameter $\bm{\theta}\in\mathbb{R}^d$ and state-value weights $\bm{w}\in\mathbb{R}^d$  (e.g., to $\bm{0}$)\\
+    
+    Loop forever (for each episode):
+        Generate an episode $S_0, A_0, R_1, S_1, A_1,\dots,R_T,S_T$ following $\pi(\cdot|\cdot, \bm{\theta})$\\
+        \qquad Loop for each step of episode, $t=0,1,\dots, T-1$:\\
+        \qquad\qquad $G\leftarrow\sum_{k=t+1}^T\gamma^{k-t-1}R_k$\\
+        \qquad\qquad $\delta\leftarrow G-\hat{v}(S_t,\bm{w})$\\
+        \qquad\qquad $\bm{w}\leftarrow\bm{w}+\alpha^{\bm{w}}\delta\nabla\hat{v}(S_t, \bm{w})$\\
+        \qquad\qquad $\bm{\theta}\leftarrow \bm{\theta}+\alpha^{\bm{\theta}}\gamma^t\delta\nabla\ln\pi(A_t|S_t, \bm{\theta})$
+\end{tcolorbox}
