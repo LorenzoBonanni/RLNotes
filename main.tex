@@ -10,11 +10,12 @@
 \usepackage{multirow, booktabs, makecell, diagbox}
 \usepackage{soul}
 \usepackage{hyperref}
+
 \hypersetup{
     colorlinks=true,
     allcolors=.,
     pdftitle={PDF TITLE},
-    linkcolor=blue
+    linkcolor=black
     }
 \geometry{
     top=3.5cm,
@@ -25,14 +26,23 @@
 % Required for inserting images
 \setlength{\parindent}{0mm}
 \DeclareMathOperator{\EX}{\mathbb{E}}% expected value
-
-\title{Reinforcement Learning Course}
-\author{Lorenzo Bonanni }
-\date{Academic Year: 2023/2024}
+\newcommand{\HRule}[1]{\rule{\linewidth}{#1}}
 
 \begin{document}
+\title{ \normalsize \textsc{}
+		\\ [2.0cm]
+		\HRule{1.5pt} \\
+		\LARGE \textbf{\uppercase{Reinforcement Learning}
+		\HRule{2.0pt} \\ [0.6cm] \LARGE{Academic Year: 2022/2023} \vspace*{10\baselineskip}}
+		}
+
+\author{\textbf{Author} \\ 
+		Lorenzo Bonanni}
+\date{}
+
 
 \maketitle
+\newpage
 \tableofcontents
 
 \include{sections/on_policy_prediction_w_approx}
