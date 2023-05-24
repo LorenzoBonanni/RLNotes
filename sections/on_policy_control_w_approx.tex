@@ -32,7 +32,7 @@ Initialize value-function weights $\mathbf{w}\in\mathbb{R}^d$ arbitrarily (e.g.,
 
 Loop for each episode:
 
-    \qquad Initialize S, A $\rightarrow$ initial state and action of episode (e.g., $\varepsilon$-greedy)
+    \qquad Initialize S, A $\leftarrow$ initial state and action of episode (e.g., $\varepsilon$-greedy)
 
     \qquad Loop for each step of episode:
 
@@ -40,7 +40,7 @@ Loop for each episode:
 
     \qquad\qquad If S' is terminal:
 
-        \qquad\qquad\qquad $\mathbf{w}\rightarrow\mathbf{w}+\alpha[R-\hat{q}(S, A, \mathbf{w})]\nabla \hat{q}(S, A, \mathbf{w})$
+        \qquad\qquad\qquad $\mathbf{w}\leftarrow\mathbf{w}+\alpha[R-\hat{q}(S, A, \mathbf{w})]\nabla \hat{q}(S, A, \mathbf{w})$
 
         \qquad\qquad\qquad Go to next episode
 

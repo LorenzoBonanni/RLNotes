@@ -6,10 +6,11 @@
 \usepackage[dvipsnames]{xcolor}
 \usepackage[export]{adjustbox}
 \usepackage{tikz, tcolorbox}
-\usetikzlibrary{positioning}
+\usetikzlibrary{positioning, fit}
 \usepackage{multirow, booktabs, makecell, diagbox}
 \usepackage{soul}
 \usepackage{hyperref}
+\usepackage{xstring}
 
 \hypersetup{
     colorlinks=true,
@@ -27,6 +28,7 @@
 \setlength{\parindent}{0mm}
 \DeclareMathOperator{\EX}{\mathbb{E}}% expected value
 \newcommand{\HRule}[1]{\rule{\linewidth}{#1}}
+\renewcommand{\ref}[1]{\textbf{\ref{#1}}}
 
 \begin{document}
 \title{ \normalsize \textsc{}
@@ -37,8 +39,10 @@
 		}
 
 \author{\textbf{Author} \\ 
-		Lorenzo Bonanni}
-\date{}
+    Lorenzo Bonanni\\
+    lorenzo.bonanni@studenti.univr.it}
+
+
 
 
 \maketitle
