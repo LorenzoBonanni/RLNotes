@@ -155,10 +155,15 @@ Input: a differentiable policy parameterization $\pi(a|s,\bm{\theta})$\\
 Algorithm parameter: step size $\alpha > 0$\\
 Initialize policy parameter $\bm{\theta}\in\mathbb{R}^d$ arbitrarily (e.g., to $\bm{0}$)\\
 
+
 Loop forever (for each episode):
-    \qquad Generate an episode $S_0, A_0, R_1, S_1, A_1,\dots,R_T,S_T$ using $\pi$\\
-    \qquad Loop for each step of episode, $t=0,1,\dots, T-1$:\\
-    \qquad\qquad $G\leftarrow\sum_{k=t+1}^T\gamma^{k-t-1}R_k$\\
+
+    \qquad Generate an episode $S_0, A_0, R_1, S_1, A_1,\dots,R_T,S_T$ using $\pi$
+
+    \qquad Loop for each step of episode, $t=0,1,\dots, T-1$:
+
+    \qquad\qquad $G\leftarrow\sum_{k=t+1}^T\gamma^{k-t-1}R_k$
+
     \qquad\qquad $\bm{\theta}\leftarrow \bm{\theta}+\alpha\gamma^tG\nabla\ln\pi(A_t|S_t, \bm{\theta})$
 \end{tcolorbox}
 Notice that the update in the last line of seudocode appears rather different from the REINFORCE update rule \ref{eq:4}. One difference is that the pseudocode uses the compact expression $\nabla\ln\pi(A_t|S_t, \bm{\theta})$ for the fractional vector $\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta})_t}$. 
@@ -197,10 +202,16 @@ it seems natural to also use a Monte Carlo method to learn the state-value weigh
     Initialize policy parameter $\bm{\theta}\in\mathbb{R}^d$ and state-value weights $\bm{w}\in\mathbb{R}^d$  (e.g., to $\bm{0}$)\\
     
     Loop forever (for each episode):
-        Generate an episode $S_0, A_0, R_1, S_1, A_1,\dots,R_T,S_T$ following $\pi(\cdot|\cdot, \bm{\theta})$\\
-        \qquad Loop for each step of episode, $t=0,1,\dots, T-1$:\\
-        \qquad\qquad $G\leftarrow\sum_{k=t+1}^T\gamma^{k-t-1}R_k$\\
-        \qquad\qquad $\delta\leftarrow G-\hat{v}(S_t,\bm{w})$\\
-        \qquad\qquad $\bm{w}\leftarrow\bm{w}+\alpha^{\bm{w}}\delta\nabla\hat{v}(S_t, \bm{w})$\\
+
+        \qquad Generate an episode $S_0, A_0, R_1, S_1, A_1,\dots,R_T,S_T$ following $\pi(\cdot|\cdot, \bm{\theta})$
+
+        \qquad Loop for each step of episode, $t=0,1,\dots, T-1$:
+
+        \qquad\qquad $G\leftarrow\sum_{k=t+1}^T\gamma^{k-t-1}R_k$
+
+        \qquad\qquad $\delta\leftarrow G-\hat{v}(S_t,\bm{w})$
+
+        \qquad\qquad $\bm{w}\leftarrow\bm{w}+\alpha^{\bm{w}}\delta\nabla\hat{v}(S_t, \bm{w})$
+
         \qquad\qquad $\bm{\theta}\leftarrow \bm{\theta}+\alpha^{\bm{\theta}}\gamma^t\delta\nabla\ln\pi(A_t|S_t, \bm{\theta})$
 \end{tcolorbox}
