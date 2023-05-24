@@ -187,7 +187,7 @@ The baseline can be any function, even a random variable, as long as it does not
 The policy gradient theorem with baseline \ref{eq:5} can be used to derive an update
 rule using similar steps as in the previous section. The update rule that we end up with
 is a new version of REINFORCE that includes a general baseline:
-\begin{align}
+\begin{align}\label{eq:6}
     \bm{\theta}_{t+1}\doteq\bm{\theta}_t+\alpha\Big(G_t-b(S_t)\Big)\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta}_t)}
 \end{align}
 Because the baseline could be uniformly zero, this update is a strict generalization of REINFORCE. In general, the baseline leaves the expected value of the update unchanged, but it can have a large effect on its variance.
@@ -215,3 +215,124 @@ it seems natural to also use a Monte Carlo method to learn the state-value weigh
 
         \qquad\qquad $\bm{\theta}\leftarrow \bm{\theta}+\alpha^{\bm{\theta}}\gamma^t\delta\nabla\ln\pi(A_t|S_t, \bm{\theta})$
 \end{tcolorbox}
+
+\subsection{Actor–Critic Methods}
+Although the REINFORCE-with-baseline method learns both a policy and a state-value function, we do not consider it to be an actor–critic method because its state-value function
+is used only as a baseline, not as a critic. That is, it is not used for bootstrapping (updating the value estimate for a state from the estimated values of subsequent states), 
+but only as a baseline for the state whose estimate is being updated.
+This is a useful distinction, for only through bootstrapping do we introduce bias and an asymptotic dependence
+on the quality of the function approximation. As we have seen, the bias introduced
+through bootstrapping and reliance on the state representation is often beneficial because
+it reduces variance and accelerates learning. REINFORCE with baseline is unbiased
+and will converge asymptotically to a local minimum, but like all Monte Carlo methods
+it tends to learn slowly (produce estimates of high variance) and to be inconvenient
+to implement online or for continuing problems.\\
+
+In order to overcome these drawbacks, Temporal-Difference (TD) techniques offer a solution by incorporating the benefits of TD into policy gradient methods. To achieve this, we introduce Actor-Critic methods with a Bootstrapping critic, which can be seen as a TD-based variation of Policy gradient.
+One-step actor-critic methods can be viewed as the policy-gradient counterparts to the previously discussed TD methods such as TD, Sarsa, and Q-learning. What makes one-step methods particularly attractive is their complete online and incremental nature.
+One-step actor–critic methods replace the full return
+of REINFORCE (\ref{eq:6}) with the one-step return (and use a learned state-value function
+as the baseline) as follows:
+\begin{align*}
+    \bm{\theta}_{t+1}&\doteq\bm{\theta}_{t}+\alpha\Big(\textcolor{red}{G_{t:t+1}}-\hat{v}(S_t, \bm{w})\Big)\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta}_t)}\\
+    &=\bm{\theta}_{t}+\alpha\Big(\textcolor{red}{R_{t+1}+\gamma\hat{v}(S_{t+1}, \bm{w})}-\hat{v}(S_t, \bm{w})\Big)\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta}_t)}\\
+    &=\bm{\theta}_{t}+\alpha\delta_t\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta}_t)}
+\end{align*}
+The natural state-value-function learning method to pair with this is semi-gradient TD(0).
+\newcommand\drawNodes[2]{
+  % #1 (str): namespace
+  % #2 (list[list[str]]): list of labels to print in the node of each neuron
+  \foreach \neurons [count=\lyrIdx] in #2 {
+    \StrCount{\neurons}{,}[\lyrLength] % use xstring package to save each layer size into \lyrLength macro
+    \foreach \n [count=\nIdx] in \neurons
+      \node[neuron] (#1-\lyrIdx-\nIdx) at (2*\lyrIdx, \lyrLength/2-1.4*\nIdx) {\n};
+  }
+}
+
+\newcommand\denselyConnectNodes[2]{
+  % #1 (str): namespace
+  % #2 (list[int]): number of nodes in each layer
+  \foreach \n [count=\lyrIdx, remember=\lyrIdx as \previdx, remember=\n as \prevn] in #2 {
+    \foreach \y in {1,...,\n} {
+      \ifnum \lyrIdx > 1
+        \foreach \x in {1,...,\prevn}
+          \draw[->] (#1-\previdx-\x) -- (#1-\lyrIdx-\y);
+      \fi
+    }
+  }
+}
+\vspace{1cm}
+\begin{tikzpicture}[
+    shorten >=1pt, shorten <=1pt,
+    neuron/.style={circle, draw, minimum size=4ex, thick},
+    legend/.style={font=\large\bfseries},
+  ]
+
+  % actor
+  \drawNodes{actor}{{{,,,,}, {,,,}, {,}}}
+  \denselyConnectNodes{actor}{{5, 4, 2}}
+
+  % input + output labels
+  \foreach \idx in {1,...,5} {
+      \node[left=0 of actor-1-\idx] {$x_\idx(s)$};
+    }
+  \foreach \idx in {1,...,2} {
+      \node[right=0 of actor-3-\idx] {$p(a_\idx|s)$};
+    }
+
+  \node[above=0.1 of actor-1-1] {Actor network};
+  \node[left=1.5 of actor-1-2, rotate=90] {\textbf{State}};
+  \node[right=1.5 of actor-3-2, rotate=90] {\textbf{Actions}};
+
+  % critic
+  \begin{scope}[xshift=9cm]
+    \drawNodes{critic}{{{,,,,}, {,,,}, {\\}}}
+  \denselyConnectNodes{critic}{{5, 4, 1}}
+  \end{scope}
+  % input + output labels
+  \foreach \idx in {1,...,5} {
+      \node[left=0 of critic-1-\idx] {$x_\idx(s)$};
+    }
+  \node[right=0 of critic-3-1] {$\hat{v}(s)$};
+  \node[above=0.1 of critic-1-1] {Critic network};
+  \node[left=1.5 of critic-1-2, rotate=90] {\textbf{State}};
+  \node[right=5 of critic-1-3, rotate=90] {\textbf{Value}};
+
+\end{tikzpicture}
+
+The actor net learns the policy function $\pi(A_t|S_t, \bm{\theta}_t)$ while the critic learn the value function $\hat{v}(S_t, \bm{w})$. 
+
+In this setting the target becomes $R_{t+1}+\gamma\hat{v}(S_{t+1}, \bm{w})$ and the difference between the taget and the estimated value function ($R_{t+1}+\gamma\hat{v}(S_{t+1}, \bm{w})-\hat{v}(S_t, \bm{w})$) is called Advantage.
+The advantage tells us if a state is better or worse than expected. If the action is better than expected - advantage $> 0$ - then we want to
+incourage this action. If it is worse than expected - advantage $< 0$ - we want to encourage the opposite action.
+
+\begin{tcolorbox}[colback=black!7!white,colframe=black!75!white,title=\textbf{One-step Actor-Critic (episodic), for $\pi_\theta\approx\pi_* $}]
+    Input: a differentiable policy parameterization $\pi(a|s,\bm{\theta})$\\
+    Input: a differentiable state-value function parameterization $\hat{v}(s,\bm{w})$\\
+    Algorithm parameter: step sizes $\alpha^{\bm{\theta}} > 0, \alpha^{\bm{w}} > 0$\\
+    Initialize policy parameter $\bm{\theta}\in\mathbb{R}^d$ and state-value weights $\bm{w}\in\mathbb{R}^d$  (e.g., to $\bm{0}$)\\
+    
+    Loop forever (for each episode):
+
+        \qquad Initialize $S$ (first state of episode)
+
+        \qquad $I\leftarrow 1$
+
+        \qquad Loop while $S$ is not terminal (for each time step):
+
+        \qquad\qquad Choose $A\sim\pi(\cdot|S, \bm{\theta})$
+        
+        \qquad\qquad Take action A, observe R, S'
+
+        \qquad\qquad $\delta\leftarrow R+\gamma\hat{v}(S', \bm{w})-\hat{v}(S, \bm{w})$
+
+        \qquad\qquad $\bm{w}\leftarrow\bm{w}+\alpha^{\bm{w}}\delta\nabla\hat{v}(S, \bm{w})$\qquad\qquad (if S' is terminal, then $\hat{v}(S', \bm{w})\doteq 0)$
+
+        \qquad\qquad $\bm{\theta}\leftarrow \bm{\theta}+\alpha^{\bm{\theta}}\gamma^t\delta\nabla\ln\pi(A_t|S_t, \bm{\theta})$
+
+        \qquad\qquad $I\leftarrow\gamma I$
+
+        \qquad\qquad $S\leftarrow S'$
+\end{tcolorbox}
+
+\subsection{Policy Gradient for Continuing Problems}
