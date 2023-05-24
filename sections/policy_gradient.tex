@@ -336,3 +336,21 @@ incourage this action. If it is worse than expected - advantage $< 0$ - we want 
 \end{tcolorbox}
 
 \subsection{Policy Gradient for Continuing Problems}
+For continuing problems without episode boundaries we need
+to define performance in terms of the average rate of reward per time step:
+\begin{align*}
+    J(\bm{\theta})\doteq r(\pi)&\doteq \lim_{h\rightarrow\infty}\frac{1}{h}\sum_{t=1}^{h}\mathbb{E}[R_t|S_0,A_{0:t-1}\sim\pi]\\
+    &=\lim_{t\rightarrow\infty}\mathbb{E}[R_t|S_0,A_{0:t-1}\sim\pi]\\
+    &=\sum_{s}\mu(s)\sum_{a}\pi(a|s)\sum_{s',r}p(s',r|s,a)r
+\end{align*}
+Where $\mu$ is the steady-state distribution under $\pi$:
+\begin{align*}
+    \mu(s)\doteq\lim_{t\leftarrow\infty}Pr\{S_t=s|A_{0:t}\sim\pi\}
+\end{align*}
+If we define values as
+\begin{align*}
+    v_\pi(s)\doteq\mathbb{E}_\pi[G_t|S_t=s]\quad\text{and}\quad q_\pi(s,a)\doteq\mathbb{E}_\pi[G_t|S_t=s, A_t=a]\\
+    \text{with}\quad G_t\doteq R_{t+1}-r(\pi)+R_{t+2}-r(\pi)+R_{t+3}-r(\pi)+\cdots
+\end{align*}
+Then the policy gradient theorem remains true and similar algorithms can be used.
+\subsection{Policy Parametrization for Continuous Actions}
