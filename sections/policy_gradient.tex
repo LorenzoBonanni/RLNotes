@@ -353,4 +353,24 @@ If we define values as
     \text{with}\quad G_t\doteq R_{t+1}-r(\pi)+R_{t+2}-r(\pi)+R_{t+3}-r(\pi)+\cdots
 \end{align*}
 Then the policy gradient theorem remains true and similar algorithms can be used.
+
 \subsection{Policy Parametrization for Continuous Actions}
+
+Policy-based methods offer practical ways of dealing with large actions spaces, even
+continuous spaces with an infinite number of actions. Instead of computing learned
+probabilities for each of the many actions, we instead learn statistics of the probability
+distribution. For example, the action set might be the real numbers, with actions chosen
+from a normal (Gaussian) distribution.
+The probability density function for the normal distribution is conventionally written
+\begin{align*}
+    (x) = \frac{1}{{\sigma \sqrt {2\pi } }}e^{{{ - \left( {x - \mu } \right)^2 } \mathord{\left/ {\vphantom {{ - \left( {x - \mu } \right)^2 } {2\sigma ^2 }}} \right. \kern-\nulldelimiterspace} {2\sigma ^2 }}}
+\end{align*}
+To produce a policy parameterization, the policy can be defined as the normal proba-
+bility density over a real-valued scalar action, with mean and standard deviation given
+by parametric function approximators that depend on the state. That is,
+\begin{align*}
+    \pi(a|s,\bm{\theta})\doteq\frac{1}{\sigma(s, \bm{\theta})\sqrt{2\pi}}exp\Big(-\frac{(a-\mu(s, \bm{\theta}))^2}{2\sigma(s, \bm{\theta})^2}\Big)
+\end{align*}
+with mean and the standard deviation given by parametric function approximators that depend on the state.
+
+We divide the policy parameters in two parts: $\bm{\theta}=[\bm{\theta}_\mu, \bm{\theta}_\sigma]^T$
