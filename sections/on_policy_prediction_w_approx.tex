@@ -28,8 +28,6 @@ estimated value function.
 
 We can use the current target as the y to predict.
 
-% TODO insert image here
-
 Not all function approximation are equally well suited.\\
 
 For a function to be good it needs to:
@@ -60,8 +58,9 @@ single episode is:
 \begin{align}
     \mu(s)=\frac{\eta(s)}{\sum_{s'}\eta(s')}\quad\forall s\in S
 \end{align}
+
 In continuing tasks the on-policy distribution is the stationary
-distribution under . In episodic tasks also depends on state initial
+distribution under $\pi$. In episodic tasks it also depends on state initial
 probability.\\
 
 
