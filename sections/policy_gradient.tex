@@ -65,19 +65,21 @@ roundnode/.style={circle, draw=black!60, fill=black!5, very thick, minimum size=
 squarednode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
 ]
     \node[squarednode]      (maintopic)                                                       {$J(\theta)$};
-    \node[roundnode]        (rightcircle1)       [right=of maintopic]                         {$\pi(a)$};
+    \node[roundnode]        (rightcircle1)       [right=of maintopic]                         {$\pi(a|s)$};
     \node[roundnode]        (rightcircle2)       [right=of maintopic, below=of rightcircle1]  {$p(s)$};
     \node[roundnode]        (transition)         [right=of rightcircle2]                      {$T$};
-    \node[squarednode]      (weights)            [right=of rightcircle1]                      {$\theta_{t+1}=\theta+\color{blue}?$};
-    \node[]                 (text)               [right=of transition]                        {unknown};
+    \node[roundnode]        (weights)            [right=of rightcircle1]                      {$\theta$};
+    \node[squarednode]      (weights_1)          [right=of weights]                           {$\theta_{t+1}=\theta+\color{blue}?$};
+    \node[] at (5.2,-2.1) {unknown};
     
     \draw[->] (maintopic.east)-- (rightcircle1.west);
     \draw[->] (maintopic.east) -- (rightcircle2.west);
     \draw[->] (rightcircle2.east) -- (transition.west);
     \draw[->] (rightcircle1.east) -- (weights.west);
     \draw[->] (rightcircle2.east) -- (weights.west);
-    \draw[->, color=blue] (weights.north) to [out=150, in=40](maintopic.north);
-    \draw[->] (text.west) -- (transition.east);
+    \draw[->] (weights_1.west) -- (weights.east);
+    \draw[->, color=blue] (weights_1.north) to [out=150, in=40](maintopic.north);
+    % \draw[->] (text.west) -- (transition.east);
 \end{tikzpicture}
 \end{center}
 
