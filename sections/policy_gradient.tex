@@ -148,7 +148,7 @@ Then, we can instantiate a first stochastic gradient-ascent algorithm as
 \begin{align}
     \bm{\theta}_{t+1}\doteq\bm{\theta}_t+\alpha\underbrace{\sum_a \hat{q}(S_t,a, \bm{w})\nabla\pi(a|S_t, \bm{\theta})}_{\widehat{\nabla J(\bm{\theta}_t})}
 \end{align}
-where is $\hat{q}$ some learned approximation of $q_\pi$.
+where $\hat{q}$ is some learned approximation of $q_\pi$.
 We call this algorithm \textit{all-actions} because its update involves all of the actions.
 If we consider instead only the action $A_t$ taken at time $t$ we obtain the \textbf{REINFORCE algorithm}.
 We continue our derivation of REINFORCE by introducing $A_t$ in the same way as we introduced $S_t$ in \ref{eq:2} by replacing a sum over the random variable’s possible values by an expectation under $\pi$, and then sampling the expectation.
@@ -159,7 +159,7 @@ We continue our derivation of REINFORCE by introducing $A_t$ in the same way as 
 \end{align*}
 where $G_t$ is the return as usual. The final expression in brackets is exactly what is needed, a quantity that can be sampled on each time step whose expectation is equal to the gradient. Using this sample to instantiate our generic stochastic gradient ascent algorithm \ref{eq:3} yields the REINFORCE update:
 \begin{align}\label{eq:4}
-\bm{\theta}_{t+1} = \bm{\theta}_t + \alpha G_t\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta})_t}
+\bm{\theta}_{t+1} = \bm{\theta}_t + \alpha G_t\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta}_t)}
 \end{align}
 This update has an intuitive appeal. Each increment is proportional to the product of a return $G_t$ and the vector $\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta})_t}$. The vector is the direction in parameter space that most increases the probability of repeating the action $A_t$ on future visits to state $S_t$.
 The update increases the parameter vector in this direction proportional to the return, and inversely proportional to the action probability. The former makes sense because it causes the parameter to move most in the directions that favor actions that yield the highest return. The latter makes sense because otherwise actions that are selected frequently are at an advantage (the updates will be more often in their direction) and might win out even if they do not yield the highest return.
@@ -182,7 +182,7 @@ Loop forever (for each episode):
 
     \qquad\qquad $\bm{\theta}\leftarrow \bm{\theta}+\alpha\gamma^tG\nabla\ln\pi(A_t|S_t, \bm{\theta})$
 \end{tcolorbox}
-Notice that the update in the last line of seudocode appears rather different from the REINFORCE update rule \ref{eq:4}. One difference is that the pseudocode uses the compact expression $\nabla\ln\pi(A_t|S_t, \bm{\theta})$ for the fractional vector $\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta})_t}$. 
+Notice that the update in the last line of pseudocode appears rather different from the REINFORCE update rule \ref{eq:4}. One difference is that the pseudocode uses the compact expression $\nabla\ln\pi(A_t|S_t, \bm{\theta})$ for the fractional vector $\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta})_t}$. 
 
 That these two expressions for the vector are equivalent follows from the identity $\nabla\ln x=\frac{\nabla x}{x}$.
 The second difference between the pseudocode update and the REINFORCE update equation is that the former includes a factor of $\gamma_t$. This is because for the derivation we are treating the non-discounted case ($\gamma=1$) while in the boxed
@@ -344,7 +344,7 @@ incourage this action. If it is worse than expected - advantage $< 0$ - we want 
 
         \qquad\qquad $\bm{w}\leftarrow\bm{w}+\alpha^{\bm{w}}\delta\nabla\hat{v}(S, \bm{w})$\qquad\qquad (if S' is terminal, then $\hat{v}(S', \bm{w})\doteq 0)$
 
-        \qquad\qquad $\bm{\theta}\leftarrow \bm{\theta}+\alpha^{\bm{\theta}}\gamma^t\delta\nabla\ln\pi(A_t|S_t, \bm{\theta})$
+        \qquad\qquad $\bm{\theta}\leftarrow \bm{\theta}+\alpha^{\bm{\theta}}I\delta\nabla\ln\pi(A_t|S_t, \bm{\theta})$
 
         \qquad\qquad $I\leftarrow\gamma I$
 
@@ -361,7 +361,7 @@ to define performance in terms of the average rate of reward per time step:
 \end{align*}
 Where $\mu$ is the steady-state distribution under $\pi$:
 \begin{align*}
-    \mu(s)\doteq\lim_{t\leftarrow\infty}Pr\{S_t=s|A_{0:t}\sim\pi\}
+    \mu(s)\doteq\lim_{t\rightarrow\infty}Pr\{S_t=s|A_{0:t}\sim\pi\}
 \end{align*}
 If we define values as
 \begin{align*}
@@ -381,9 +381,8 @@ The probability density function for the normal distribution is conventionally w
 \begin{align*}
     (x) = \frac{1}{{\sigma \sqrt {2\pi } }}e^{{{ - \left( {x - \mu } \right)^2 } \mathord{\left/ {\vphantom {{ - \left( {x - \mu } \right)^2 } {2\sigma ^2 }}} \right. \kern-\nulldelimiterspace} {2\sigma ^2 }}}
 \end{align*}
-To produce a policy parameterization, the policy can be defined as the normal proba-
-bility density over a real-valued scalar action, with mean and standard deviation given
-by parametric function approximators that depend on the state. That is,
+To produce a policy parameterization, the policy can be defined as the normal probability density over a real-valued scalar action, with mean and standard deviation given
+by parametric function approximators that depend on the state. That is
 \begin{align*}
     \pi(a|s,\bm{\theta})\doteq\frac{1}{\sigma(s, \bm{\theta})\sqrt{2\pi}}exp\Big(-\frac{(a-\mu(s, \bm{\theta}))^2}{2\sigma(s, \bm{\theta})^2}\Big)
 \end{align*}
