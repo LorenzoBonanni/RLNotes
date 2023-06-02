@@ -14,7 +14,7 @@ Before we proceed, let's introduce some notation:
     \item The policy's parameter vector is denoted as $\bm{\theta}\in\mathbb{R}^{d'}$.
     \item $\pi(a|s, \bm{\theta})$ represents the probability of selecting action $a$ given state $s$ and policy parameters $\bm{\theta}$. In other words, $\pi(a|s, \bm{\theta})=Pr\{A_t=a|S_t=s,\bm{\theta}_t=\bm{\theta}\}$.
     \item If the method requires it, the learned value function is denoted as $\hat{v}(s, \bm{w})$ and it has parameters $\bm{w}\in\mathbb{R}^{d}$.
-    \item $J(\bm{\theta})$ denotes a measure of policy performance, which depends on the policy parameters."
+    \item $J(\bm{\theta})$ denotes a measure of policy performance, which depends on the policy parameters.
 \end{itemize}
 
 The objective of policy gradient methods is to find the optimal parameters $\bm{\theta}$ that maximize the performance measure $J(\bm{\theta})$.
@@ -58,14 +58,16 @@ parameterization the action probabilities change smoothly as a function of the l
 parameter, whereas in $\varepsilon$-greedy selection the action probabilities may change dramatically for an arbitrarily small change in the estimated action values.
 Largely due to this characteristic, policy-gradient methods offer stronger convergence guarantees compared to action-value methods.\\
 
-With function approximation, it may seem challenging to change the policy parameter in a way that ensures improvement. The problem is that \textbf{performance} depends on both the \textbf{action selections} and the \textbf{distribution of states} in which those selections are made, and that both of these are affected by the \textbf{policy parameter}. Given a state, the effect of the policy parameter on the actions, and thus on reward, can be computed in a relatively straightforward way from knowledge of the parameterization. But the effect of the policy on the state distribution is a function of the environment and is typically unknown. How can we estimate the performance gradient with respect to the policy parameter when the gradient depends on the unknown effect of policy changes on the state distribution?\\
+With function approximation, it may seem challenging to change the policy parameter in a way that ensures improvement. The problem is that \textbf{performance} depends on both the \textbf{action selections} and the \textbf{distribution of states} in which those selections are made, and that both of these are affected by the \textbf{policy parameter}. Given a state, the effect of the policy parameter on the actions, and thus on reward, can be computed in a relatively straightforward way from knowledge of the parameterization. But the effect of the policy on the state distribution is a function of the environment and is typically unknown. 
+
+\textbf{How can we estimate the performance gradient with respect to the policy parameter when the gradient depends on the unknown effect of policy changes on the state distribution?}\\
 \begin{center}
 \begin{tikzpicture}[
 roundnode/.style={circle, draw=black!60, fill=black!5, very thick, minimum size=7mm},
 squarednode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
 ]
     \node[squarednode]      (maintopic)                                                       {$J(\theta)$};
-    \node[roundnode]        (rightcircle1)       [right=of maintopic]                         {$\pi(a|s)$};
+    \node[roundnode]        (rightcircle1)       [right=of maintopic]                         {$\Hat{\pi}(a|s)$};
     \node[roundnode]        (rightcircle2)       [right=of maintopic, below=of rightcircle1]  {$p(s)$};
     \node[roundnode]        (transition)         [right=of rightcircle2]                      {$T$};
     \node[roundnode]        (weights)            [right=of rightcircle1]                      {$\theta$};
@@ -76,20 +78,32 @@ squarednode/.style={rectangle, draw=red!60, fill=red!5, very thick, minimum size
     \draw[->] (maintopic.east) -- (rightcircle2.west);
     \draw[->] (rightcircle2.east) -- (transition.west);
     \draw[->] (rightcircle1.east) -- (weights.west);
-    \draw[->] (rightcircle2.east) -- (weights.west);
+    \draw[->] (rightcircle2.north) -- (rightcircle1.south);
     \draw[->] (weights_1.west) -- (weights.east);
     \draw[->, color=blue] (weights_1.north) to [out=150, in=40](maintopic.north);
     % \draw[->] (text.west) -- (transition.east);
 \end{tikzpicture}
 \end{center}
 
-\begin{tcolorbox}[colbacktitle=black!7!white,coltitle=black!75!white,title=\textbf{Proof of the Policy Gradient Theorem (episodic case)}]
+\begin{tcolorbox}[
+    enhanced, 
+    breakable,
+    skin first=enhanced,
+    skin middle=enhanced,
+    skin last=enhanced,
+    colbacktitle=black!7!white,
+    coltitle=black!75!white,
+    title=\textbf{Proof of the Policy Gradient Theorem (episodic case)}
+    ]
 With just elementary calculus and re-arranging of terms, we can prove the policy gradient theorem from first principles. To keep the notation simple, we leave it implicit in all cases that $\pi$ is a function of $\theta$, and all gradients are also implicitly with respect to $\theta$. First note that the gradient of the state-value function can be written in terms of the action-value function as
 \begin{align*}
     \textcolor{blue}{\nabla v_\pi(s)}&=\nabla\Big[\sum_a\pi(a|s)q_\pi(s,a)\Big],\quad for\;all\;s\in S\\
     &=\sum_a\Big[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\nabla q_\pi(s,a)\Big]\\
-    &=\sum_a\Big[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\nabla\sum_{s',r}p(s',r|s,a)(r+v_\pi(s') \Big]\\
-    &=\sum_a\Bigg[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\sum_{s'}p(s'|s,a)\textcolor{blue}{\nabla v_\pi(s')} \Bigg]\\
+    &=\sum_a\Big[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\nabla\sum_{s',r}p(s',r|s,a)(r+v_\pi(s')) \Big]\\
+    &=\sum_a\Big[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\sum_{s',r}\nabla p(s',r|s,a)(r+v_\pi(s'))+p(s',r|s,a)\nabla(r+v_\pi(s')) \Big]\\
+    &=\sum_a\Big[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\sum_{s',r}0\cdot(r+v_\pi(s'))+p(s',r|s,a)(0+\nabla v_\pi(s')) \Big]\\
+    &=\sum_a\Big[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\sum_{s',r}p(s',r|s,a)\nabla v_\pi(s') \Big]\\
+    &=\sum_a\Bigg[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\sum_{s'}p(s'|s,a)\textcolor{blue}{\nabla v_\pi(s')} \Bigg] \text{Since there are no more $r$ terms  we can remove it}\\
     &=\sum_a\Bigg[\nabla\pi(a|s)q_\pi(s,a)+\pi(a|s)\sum_{s'}p(s'|s,a) \;\backslash \\
     &\quad\quad\textcolor{blue}{\sum_{a'}\Big[\nabla\pi(a'|s')q_\pi(s',a')+\pi(a'|s')\sum_{s''}p(s''|s',a')\nabla v_\pi(s'')\Big]}\Bigg]\\
     &=\sum_{x\in\mathcal{S}}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k, \pi)\sum_a\nabla\pi(a|x)q_\pi(x,a)

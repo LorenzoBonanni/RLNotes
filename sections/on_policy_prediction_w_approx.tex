@@ -26,9 +26,7 @@ estimated value function.
     \item \textbf{DP update}:$\underbrace{S_t}_{\splittedtext{State}{Updated}}\mapsto \underbrace{\EX{[R_{t+1}+\gamma\hat{v}(S_{t+1}, w_t)\;|\;S_t=s]}}_{\splittedtext{Update}{Target}}$
 \end{itemize}
 
-We can use the current target as the y to predict.
-
-Not all function approximation are equally well suited.\\
+We can use the current target as the y to predict. Not all function approximation are equally well suited.\\
 
 For a function to be good it needs to:
 \begin{itemize}
@@ -106,7 +104,7 @@ In practice the \textbf{target output observed} at time $t$, $U_t\in\mathbb{R}$ 
 \begin{align}
     \mathbf{w}_{t+1}\doteq\mathbf{w}_{t}+\alpha[U_t-\hat{v}(S_t, \mathbf{w}_{t})]\nabla \hat{v}(S_t, \mathbf{w}_{t})
 \end{align}
-If $U_t$ is an unbiased estimate of the value, i.e $\mathbb{E}[U_t|S_t=s]=v_\pi(S_t)$ then $\mathbf{w}_t$ is guaranteed to converge to converge to local optimum.\\
+If $U_t$ is an unbiased estimate of the value, i.e $\mathbb{E}[U_t|S_t=s]=v_\pi(S_t)$ then $\mathbf{w}_t$ is guaranteed to converge to local optimum.\\
 
 The \textbf{Monte Carlo target} $U_t\doteq G_t$ is an unbiased estimate of $v_\pi(S_t)$, hence the SGD version of MC state-value prediction converges.\\
 
@@ -121,6 +119,8 @@ Loop forever (for each episode):
     \qquad Generate an episode $S_0, A_0, R_1, S_1, A_1,\dots,R_T,S_T$ using $\pi$
 
     \qquad Loop for each step of episode, $t=0,1,\dots, T-1$:
+
+    \qquad\qquad $G\leftarrow \gamma G+R_{t+1}$
 
     \qquad\qquad $\mathbf{w}\leftarrow\mathbf{w}+\alpha[G_t-\hat{v}(S_t, \mathbf{w})]\nabla \hat{v}(S_t, \mathbf{w})$
 \end{tcolorbox}
@@ -190,6 +190,6 @@ function, such as:
 \begin{itemize}
     \item Artificial Neural networks (ANNs)
     \item Memory-based (nonparametric) functions
-    \item Memory-based (nonparametric) functions
+    \item Kernel-based functions
 \end{itemize}
 ANNs have recently become the most popular approximation functions thanks to the fact that they are universal function approximators and that in deep architectures they can generate hierarchical representations of features automatically.
