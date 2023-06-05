@@ -46,10 +46,10 @@ Action values could be used as preferences with soft-max but this would not allo
 When comparing policy parametrization with action value parametrization, the former offers several advantages:
 
 \begin{enumerate}
-\item The policy function is often simpler and easier to approximate compared to the action-value function.
-\item Policy parametrization allows for the incorporation of prior knowledge, which is a significant benefit and a common reason for choosing policy-based learning methods.
-\item Unlike action-value methods, policy gradient methods (such as those employing soft-max in action preferences) facilitate the selection of actions with arbitrary probabilities, thus supporting the use of stochastic policies.
-\item Policy-based methods can effectively handle continuous action spaces, whereas action-value methods may face challenges in such scenarios due to their inability to directly handle continuous actions.
+\item The policy function is often \textbf{simpler and easier to approximate} compared to the action-value function.
+\item Policy parametrization allows for the incorporation of \textbf{prior knowledge}, which is a significant benefit and a common reason for choosing policy-based learning methods.
+\item Unlike action-value methods, policy gradient methods (such as those employing soft-max in action preferences) facilitate the selection of actions with arbitrary probabilities, thus supporting the use of \textbf{stochastic policies}.
+\item Policy-based methods can effectively handle \textbf{continuous action spaces}, whereas action-value methods may face challenges in such scenarios due to their inability to directly handle continuous actions.
 \end{enumerate}
 
 \subsection{The Policy Gradient Theorem}
@@ -161,7 +161,7 @@ where $G_t$ is the return as usual. The final expression in brackets is exactly 
 \begin{align}\label{eq:4}
 \bm{\theta}_{t+1} = \bm{\theta}_t + \alpha G_t\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta}_t)}
 \end{align}
-This update has an intuitive appeal. Each increment is proportional to the product of a return $G_t$ and the vector $\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta})_t}$. The vector is the direction in parameter space that most increases the probability of repeating the action $A_t$ on future visits to state $S_t$.
+This update has an intuitive appeal. Each increment is proportional to the product of a return $G_t$ and the vector $\frac{\nabla\pi(A_t|S_t, \bm{\theta}_t)}{\pi(A_t|S_t, \bm{\theta}_t)}$. The vector is the direction in parameter space that most increases the probability of repeating the action $A_t$ on future visits to state $S_t$.
 The update increases the parameter vector in this direction proportional to the return, and inversely proportional to the action probability. The former makes sense because it causes the parameter to move most in the directions that favor actions that yield the highest return. The latter makes sense because otherwise actions that are selected frequently are at an advantage (the updates will be more often in their direction) and might win out even if they do not yield the highest return.
 
 Note that REINFORCE uses the complete return from time $t$, which includes all future rewards up until the end of the episode. In this sense REINFORCE is a Monte Carlo algorithm and is well defined only for the episodic case with all updates made in retrospect after the episode is completed.
